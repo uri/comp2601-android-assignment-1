@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, Lecture4clientActivity!</string>
+    <string name="app_name">Lecture4client</string>
+    <string name="connect">Connect</string>
+    <string name="sendMessage">Send Message</string>
+    <string name="text">txt</string>
+    <string name="icon">Icon</string>
+    <string name="filename">File Name</string>
+    <string name="is_txt">Is TXT</string>
+
+</resources>
