@@ -1,12 +1,6 @@
 package edu.carleton.COMP2601;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
-import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -17,7 +11,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -49,7 +42,6 @@ public class Assignment1Activity extends Activity implements Runnable {
 	private NetworkService netService;
 
 	// Service connections
-	
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,10 +59,9 @@ public class Assignment1Activity extends Activity implements Runnable {
 				netService = ((NetworkService.MyBinder) service).getService();
 			}
 		};
-		
+
 		// Bind the service
-		getApplicationContext().bindService(new Intent(this, NetworkService.class), serviceConnection,
-				BIND_AUTO_CREATE);
+		getApplicationContext().bindService(new Intent(this, NetworkService.class), serviceConnection, BIND_AUTO_CREATE);
 
 		state = ClientState.NOT_CONNECTED;
 
@@ -112,7 +103,7 @@ public class Assignment1Activity extends Activity implements Runnable {
 		} else if (state == ClientState.CONNECTED) {
 
 			// Send a message
-			netService.sendMessage(Message.jsonTypeMessage(Message.REQ_LOGIN));
+			netService.sendMessage(new Message (Message.REQ_LOGIN));
 
 			// Now we read a message
 			getReply(Message.REPLY_LOGIN, ClientState.LOGGED_IN);
@@ -125,18 +116,15 @@ public class Assignment1Activity extends Activity implements Runnable {
 		} else if (state == ClientState.LOGGED_IN) {
 			// We are logged in, we would like to get the list of files
 			// Send the request files message
-			netService.sendMessage(Message.jsonTypeMessage(Message.REQ_LIST_FILES));
+			netService.sendMessage(new Message(Message.REQ_LIST_FILES));
 			// dos.writeObject(new Message(Message.REQ_LIST_FILES, null));
 			toastMessage("Sent" + Message.REQ_LIST_FILES);
 
 			// Get the reply
-			Message reply = getReply(Message.REPLY_LIST_FILES,
-					ClientState.VIEWING_FILES);
+			Message reply = getReply(Message.REPLY_LIST_FILES, ClientState.VIEWING_FILES);
 			if (reply != null) {
-				Intent intent = new Intent(getApplicationContext(),
-						ListViewActivity.class);
-				intent.putExtra("fileList", (ArrayList<String>) reply.getBody()
-						.get(Message.KEY_FILE_LIST));
+				Intent intent = new Intent(getApplicationContext(), ListViewActivity.class);
+				intent.putExtra("fileList", (ArrayList<String>) reply.getBody().get(Message.KEY_FILE_LIST));
 				intent.putExtra("state", state);
 				startActivity(intent);
 			}
@@ -153,7 +141,7 @@ public class Assignment1Activity extends Activity implements Runnable {
 		Message reply = netService.receiveMessage();
 
 		if (reply != null) {
-			if (reply.getType().equals(expectedReply)) {
+			if (reply.getHeader().getType().equals(expectedReply)) {
 				state = newState;
 				return reply;
 			}

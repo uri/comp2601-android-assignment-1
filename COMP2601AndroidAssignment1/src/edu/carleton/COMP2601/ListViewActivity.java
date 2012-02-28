@@ -57,20 +57,17 @@ public class ListViewActivity extends ListActivity implements Runnable {
 	public void run() {
 
 		// Send the request for a file
-		HashMap<String, Object> body = new HashMap<String, Object>();
-		body.put(Message.KEY_FILE, fileList.get(position));
+		Message request = new Message(Message.REQ_FILE);
+		request.getBody().put(Message.KEY_FILE, fileList.get(position));
 		
-		Message request = new Message(Message.REQ_FILE, body);
-		
-		Assignment1Activity.getInstance().getNetworkService()
-				.sendMessage(request.toJSONStr());
+		Assignment1Activity.getInstance().getNetworkService().sendMessage(request);
 
 		// Listen for the response
 		Message reply = Assignment1Activity.getInstance().getNetworkService().receiveMessage();
 		
 		// Check if the reply is good
 		if (reply != null) {
-			if (reply.getType().equals(Message.REPLY_FILE)) {
+			if (reply.getHeader().getType().equals(Message.REPLY_FILE)) {
 //				Toast.makeText(this, "Content Reply", Toast.LENGTH_LONG).show();
 				content = (String) reply.getBody().get(Message.KEY_CONTENT);
 

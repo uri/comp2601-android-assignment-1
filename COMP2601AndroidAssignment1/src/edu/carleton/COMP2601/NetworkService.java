@@ -1,9 +1,10 @@
 package edu.carleton.COMP2601;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -12,39 +13,60 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
 public class NetworkService extends Service {
 
 	private final IBinder mBinder = new MyBinder();
-	private ObjectInputStream dis;
-	private ObjectOutputStream dos;
+	private JsonReader dis;
+	private JsonWriter dos;
 	private Socket client;
+	private Gson gson;
 
-	public void sendMessage(String string) {
+	public void sendMessages() {
+		// TODO Complete me
+	}
+	
+	public void sendMessage(Message m) {
 		try {
-			dos.writeObject(string);
+			
+			dos = new JsonWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())));
+			
+			dos.beginArray();
+			gson.toJson(m, Message.class, dos);
+			dos.endArray();
+			
+			// Flush to send
+			dos.flush();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void receiveMessages() {
+		// TODO Complete me
+	}
+	
+	public Message receiveMessage() {
+		
+		
+		Message reply = null;
+		
+		try {
+			dis = new JsonReader(new BufferedReader(new InputStreamReader(client.getInputStream())));	
+			
+			dis.beginArray();
+			reply = gson.fromJson(dis, Message.class);
+			dis.endArray();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-	}
-
-	public Message receiveMessage() {
-		String strReply = null;
-		try {
-			strReply = (String) dis.readObject();
-		} catch (OptionalDataException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		if (strReply != null) {
-			Message reply = new Message(strReply);
-			return reply;
-		}
-		return null;
+		return reply;
 	}
 
 	public void establishConnection(String ipAddress, int portNum) {
@@ -52,8 +74,8 @@ public class NetworkService extends Service {
 			client = new Socket(ipAddress, portNum);
 			
 			if (isConnected()) {
-				dos = new ObjectOutputStream(client.getOutputStream());
-				dis = new ObjectInputStream(client.getInputStream());
+				
+				
 			}
 			
 		} catch (UnknownHostException e) {
@@ -72,7 +94,7 @@ public class NetworkService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
+		gson = new GsonBuilder().create();
 	}
 
 	@Override
